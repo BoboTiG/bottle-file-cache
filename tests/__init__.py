@@ -1,0 +1,5 @@
+"""Simple file cache for the Python Bottle web framework.
+
+You can always get the latest version at:
+    https://github.com/BoboTiG/bottle-file-cache
+"""

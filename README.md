@@ -33,7 +33,7 @@ import bottle
 
 
 @bottle.route("/hello/<name>")
-+@cache
++@cache()
 def index(name: str) -> str:
     return bottle.template("<b>Hello {{name}}</b>!", name=name)
 ```

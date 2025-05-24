@@ -1,0 +1,67 @@
+[tool.coverage.report]
+exclude_also = [
+  'if TYPE_CHECKING:',
+]
+
+[tool.mypy]
+# Ensure we know what we do
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unused_configs = true
+
+# Imports management
+ignore_missing_imports = true
+follow_imports = "skip"
+
+# Ensure full coverage
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true
+
+# Restrict dynamic typing (a little)
+# e.g. `x: List[Any]` or x: List`
+# disallow_any_generics = true
+
+strict_equality = true
+
+
+[tool.pytest.ini_options]
+addopts = """
+  --cov-report=term-missing:skip-covered
+  --cov=bottle_file_cache
+  --no-cov-on-fail
+  --showlocals
+  --strict-markers
+  -r fE
+  -vvv
+  tests/
+"""
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py38"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint]
+extend-select = ["ALL"]
+ignore = [
+  "COM812",   # conflict
+  "D203",     # conflict
+  "D213",     # conflict
+  "ISC001",   # conflict
+]
+fixable = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+  "D",       # no need for documentation
+  "FBT003",  # Boolean positional value in function call
+  "S101",    # Use of `assert` detected
+]
+
