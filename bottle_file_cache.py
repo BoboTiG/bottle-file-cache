@@ -10,7 +10,7 @@ from contextlib import suppress
 from functools import wraps
 from hashlib import md5
 from pathlib import Path
-from time import monotonic
+from time import time
 from typing import TYPE_CHECKING
 from zlib import compress, decompress
 
@@ -66,6 +66,11 @@ def cache_key(text: str) -> str:
     return md5(text.encode(), usedforsecurity=False).hexdigest()
 
 
+def cache_time() -> int:
+    """Get the Unix time."""
+    return int(time())
+
+
 #
 # CRUD
 #
@@ -74,7 +79,7 @@ def cache_key(text: str) -> str:
 def create(key: str, content: str) -> str:
     """Store a HTTP response into a compressed cache file."""
     DIR.mkdir(exist_ok=True, parents=True)
-    cache_file(key).write_bytes(compress(f"{int(monotonic())}|{content}".encode(), level=9))
+    cache_file(key).write_bytes(compress(f"{cache_time()}|{content}".encode(), level=9))
     return content
 
 
@@ -83,11 +88,12 @@ def read(key: str) -> str | None:
     file = cache_file(key)
 
     with suppress(FileNotFoundError):
-        when, page = decompress(file.read_bytes()).decode().split("|", 1)
-        if (diff := int(monotonic()) - int(when)) < DELAY_BEFORE_EXPIRATION_IN_SEC:
+        cached_at, content = decompress(file.read_bytes()).decode().split("|", 1)
+        elapsed = cache_time() - int(cached_at)
+        if 0 <= elapsed < DELAY_BEFORE_EXPIRATION_IN_SEC:
             if APPEND_HEADER:
-                bottle.response.headers.append(HEADER_NAME, f"{diff / ONE_MINUTE_IN_SEC:,.2f} min")
-            return page
+                bottle.response.headers.append(HEADER_NAME, f"{elapsed / ONE_MINUTE_IN_SEC:,.2f} min")
+            return content
 
         delete(key)
 
