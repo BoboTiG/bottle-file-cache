@@ -13,5 +13,4 @@ import bottle_file_cache
 
 @pytest.fixture(autouse=True)
 def isolate(tmp_path: Path) -> None:
-    bottle_file_cache.DIR = tmp_path / bottle_file_cache.DIR.name
-    bottle_file_cache.DIR.mkdir()
+    bottle_file_cache.CONFIG.folder = tmp_path

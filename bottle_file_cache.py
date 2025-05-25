@@ -10,7 +10,9 @@ from contextlib import suppress
 from functools import wraps
 from hashlib import md5
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from time import time
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
 from zlib import compress, decompress
 
@@ -32,23 +34,18 @@ modifications, that you make.
 """
 
 #
-# Constants
+# Configuration
 #
 
-# Files
-DIR = Path(__file__).parent.parent / "cache"
-FILE_EXT = "cache"
-
-# Times
-DELAY_BEFORE_EXPIRATION_IN_SEC = 10 * 60
+CONFIG = SimpleNamespace(
+    folder=Path(TemporaryDirectory(prefix="bottle-file-", suffix="-cache", ignore_cleanup_errors=True).name),
+    file_ext="cache",
+    expiration_in_sec=10 * 60,
+    append_header=True,
+    header_name="Cached-Since",
+    http_methods=["GET"],
+)
 ONE_MINUTE_IN_SEC = 60
-
-# Special HTTP header injected to cached responses
-APPEND_HEADER = True
-HEADER_NAME = "Cached-Since"
-
-# HTTP methods allowed to use the cache
-HTTP_METHODS = ["GET"]
 
 
 #
@@ -56,17 +53,17 @@ HTTP_METHODS = ["GET"]
 #
 
 
-def cache_file(key: str) -> Path:
-    """Get the cache file from the given `key`."""
-    return DIR / f"{key}.{FILE_EXT}"
-
-
-def cache_key(text: str) -> str:
+def compute_key(text: str) -> str:
     """Compute the cache key from the given `text`."""
     return md5(text.encode(), usedforsecurity=False).hexdigest()
 
 
-def cache_time() -> int:
+def get_file(key: str) -> Path:
+    """Get the cache file from the given `key`."""
+    return CONFIG.folder / f"{key}.{CONFIG.file_ext}"
+
+
+def get_time() -> int:
     """Get the Unix time."""
     return int(time())
 
@@ -78,21 +75,21 @@ def cache_time() -> int:
 
 def create(key: str, content: str) -> str:
     """Store a HTTP response into a compressed cache file."""
-    DIR.mkdir(exist_ok=True, parents=True)
-    cache_file(key).write_bytes(compress(f"{cache_time()}|{content}".encode(), level=9))
+    CONFIG.folder.mkdir(exist_ok=True, parents=True)
+    get_file(key).write_bytes(compress(f"{get_time()}|{content}".encode(), level=9))
     return content
 
 
 def read(key: str) -> str | None:
     """Retreive a response from a potential cache file using the provided `key`."""
-    file = cache_file(key)
+    file = get_file(key)
 
     with suppress(FileNotFoundError):
         cached_at, content = decompress(file.read_bytes()).decode().split("|", 1)
-        elapsed = cache_time() - int(cached_at)
-        if 0 <= elapsed < DELAY_BEFORE_EXPIRATION_IN_SEC:
-            if APPEND_HEADER:
-                bottle.response.headers.append(HEADER_NAME, f"{elapsed / ONE_MINUTE_IN_SEC:,.2f} min")
+        elapsed = get_time() - int(cached_at)
+        if 0 <= elapsed < CONFIG.expiration_in_sec:
+            if CONFIG.append_header:
+                bottle.response.headers.append(CONFIG.header_name, f"{elapsed / ONE_MINUTE_IN_SEC:,.2f} min")
             return content
 
         delete(key)
@@ -102,7 +99,7 @@ def read(key: str) -> str | None:
 
 def delete(key: str) -> None:
     """Delete a cache file."""
-    cache_file(key).unlink(missing_ok=True)
+    get_file(key).unlink(missing_ok=True)
 
 
 #
@@ -119,7 +116,7 @@ def cache(**cache_kwargs: list[str]) -> Callable:
             # No cache when:
             #   - Bottle runs in debug mode
             #   - the HTTP method is not allowed
-            if bottle.DEBUG or bottle.request.method not in HTTP_METHODS:
+            if bottle.DEBUG or bottle.request.method not in CONFIG.http_methods:
                 return func(*args, **kwargs)
 
             # The cache key is computed from the request path, first
@@ -131,7 +128,7 @@ def cache(**cache_kwargs: list[str]) -> Callable:
                 for value in values:
                     text += f"-{req_attr.get(value, '')}"
 
-            key = cache_key(text)
+            key = compute_key(text)
             return read(key) or create(key, func(*args, **kwargs))
 
         return wrapper

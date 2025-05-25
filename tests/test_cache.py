@@ -11,11 +11,13 @@ from unittest.mock import patch
 
 import bottle_file_cache
 
-KEY = bottle_file_cache.cache_key("something")
+KEY = bottle_file_cache.compute_key("something")
 
 
 def cached_files() -> list[str]:
-    return [file.name for file in sorted(bottle_file_cache.DIR.glob(f"*.{bottle_file_cache.FILE_EXT}"))]
+    return [
+        file.name for file in sorted(bottle_file_cache.CONFIG.folder.glob(f"*.{bottle_file_cache.CONFIG.file_ext}"))
+    ]
 
 
 def test_create() -> None:
@@ -23,7 +25,7 @@ def test_create() -> None:
 
     value = "data"
     assert bottle_file_cache.create(KEY, value) == value
-    assert cached_files() == [f"{KEY}.{bottle_file_cache.FILE_EXT}"]
+    assert cached_files() == [f"{KEY}.{bottle_file_cache.CONFIG.file_ext}"]
 
 
 def test_read_no_cache_entry() -> None:
@@ -49,7 +51,7 @@ def test_read_expired() -> None:
 
     assert bottle_file_cache.read(KEY) == value
 
-    with patch.object(bottle_file_cache, "DELAY_BEFORE_EXPIRATION_IN_SEC", new=1):
+    with patch.object(bottle_file_cache.CONFIG, "expiration_in_sec", new=1):
         time.sleep(1.01)
         assert bottle_file_cache.read(KEY) is None
 
