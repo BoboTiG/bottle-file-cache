@@ -6,6 +6,7 @@ You can always get the latest version at:
 
 from __future__ import annotations
 
+import atexit
 from contextlib import suppress
 from functools import wraps
 from hashlib import md5
@@ -36,9 +37,11 @@ modifications, that you make.
 #
 # Configuration
 #
+_TMP = TemporaryDirectory(prefix="bottle-file-", suffix="-cache", ignore_cleanup_errors=True)
+atexit.register(_TMP.cleanup)
 
 CONFIG = SimpleNamespace(
-    folder=Path(TemporaryDirectory(prefix="bottle-file-", suffix="-cache", ignore_cleanup_errors=True).name),
+    folder=Path(_TMP.name),
     file_ext="cache",
     expiration_in_sec=10 * 60,
     append_header=True,

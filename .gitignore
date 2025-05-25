@@ -2,6 +2,7 @@
 .coverage
 
 # Folders
+dist/
 .mypy_cache/
 .ruff_cache/
 __pycache__/

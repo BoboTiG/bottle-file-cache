@@ -1,3 +1,78 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bottle-file-cache"
+description = "A simple file cache for the Python Bottle web framework."
+readme = "README.md"
+requires-python = ">= 3.10"
+authors = [
+  { name = "Mickaël Schoentgen", email="contact@tiger-222.fr" },
+]
+maintainers = [
+  { name = "Mickaël Schoentgen", email="contact@tiger-222.fr" },
+]
+license = { file = "LICENSE" }
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = [
+    "bottle",
+    "cache",
+    "file",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://pypi.org/project/bottle-file-cache"
+Changelog = "https://github.com/BoboTiG/bottle-file-cache/blob/main/CHANGELOG.md"
+Source = "https://github.com/BoboTiG/bottle-file-cache"
+Sponsor = "https://github.com/sponsors/BoboTiG"
+Tracker = "https://github.com/BoboTiG/bottle-file-cache/issues"
+"Released Versions" = "https://github.com/BoboTiG/bottle-file-cache/releases"
+
+[project.optional-dependencies]
+tests = [
+  "bottle==0.13.3",
+  "mypy==1.15.0",
+  "pytest==8.3.5",
+  "pytest-cov==6.1.1",
+  "ruff==0.11.11",
+  "webtest==3.0.4",
+]
+dev = [
+  "build==1.2.2.post1",
+  "twine==6.1.0",
+]
+
+[tool.hatch.version]
+path = "bottle_file_cache.py"
+
+[tool.hatch.build.targets.sdist]
+only-include = [
+  "CHANGELOG.md",
+  "bottle_file_cache.py",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+  "bottle_file_cache.py",
+]
+
 [tool.coverage.report]
 exclude_also = [
   'if TYPE_CHECKING:',
