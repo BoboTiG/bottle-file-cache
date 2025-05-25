@@ -42,4 +42,13 @@ And that's it!
 
 ## Advanced Usage
 
-TODO.
+You can specify more details to compute the cache key.
+
+Here, it takes URL parameters in addition to the request path:
+
+```python
+@bottle.route("/hello2/<name>")
+@cache(params=["gender", "pron", "not-used"])
+def index2(name: str) -> str:
+    return bottle.template("<b>Hello {{name}} ({{gender}}, {{pron}})</b>!", name=name, **bottle.request.params)
+```

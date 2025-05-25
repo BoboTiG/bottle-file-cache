@@ -22,7 +22,7 @@ import bottle
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-__version__ = "1.0.0"
+__version__ = "1.0.1-dev"
 __author__ = "Mickaël Schoentgen"
 __copyright__ = f"""
 Copyright (c) 2025, {__author__}
