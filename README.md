@@ -1,5 +1,8 @@
 # Bottle File Cache
 
+[![PyPI version](https://badge.fury.io/py/bottle-file-cache.svg)](https://badge.fury.io/py/bottle-file-cache)
+[![Python versions](https://img.shields.io/pypi/pyversions/bottle-file-cache.svg)](https://pypi.python.org/pypi/bottle-file-cache)
+
 A simple file cache for the Python [Bottle](https://pypi.org/project/bottle) web framework.
 
 ## Installation
