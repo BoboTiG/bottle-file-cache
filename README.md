@@ -42,6 +42,8 @@ And that's it!
 
 ## Advanced Usage
 
+### Bottle Parameters
+
 You can specify more details to compute the cache key.
 
 Here, it takes URL parameters in addition to the request path:
@@ -51,4 +53,15 @@ Here, it takes URL parameters in addition to the request path:
 @cache(params=["gender", "pron", "not-used"])
 def index2(name: str) -> str:
     return bottle.template("<b>Hello {{name}} ({{gender}}, {{pron}})</b>!", name=name, **bottle.request.params)
+```
+
+### Par-Call Expiration
+
+You can specify a custom expiration time (in seconds) on a per-call basis:
+
+```python
+@bottle.route("/hello3/<name>")
+@cache(expires=1)
+def index3(name: str) -> str:
+    return bottle.template("<b>Hello {{name}}</b>!", name=name)
 ```

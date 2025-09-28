@@ -22,7 +22,7 @@ import bottle
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-__version__ = "1.0.1-dev"
+__version__ = "1.1.0"
 __author__ = "Mickaël Schoentgen"
 __copyright__ = f"""
 Copyright (c) 2025, {__author__}
@@ -40,15 +40,15 @@ modifications, that you make.
 _TMP = TemporaryDirectory(prefix="bottle-file-", suffix="-cache", ignore_cleanup_errors=True)
 atexit.register(_TMP.cleanup)
 
+ONE_MINUTE_IN_SEC = 60
 CONFIG = SimpleNamespace(
     folder=Path(_TMP.name),
     file_ext="cache",
-    expiration_in_sec=10 * 60,
+    expiration_in_sec=10 * ONE_MINUTE_IN_SEC,
     append_header=True,
     header_name="Cached-Since",
     http_methods=["GET"],
 )
-ONE_MINUTE_IN_SEC = 60
 
 
 #
@@ -83,14 +83,14 @@ def create(key: str, content: str) -> str:
     return content
 
 
-def read(key: str) -> str | None:
+def read(key: str, *, expires: int = 0) -> str | None:
     """Retreive a response from a potential cache file using the provided `key`."""
     file = get_file(key)
 
     with suppress(FileNotFoundError):
         cached_at, content = decompress(file.read_bytes()).decode().split("|", 1)
         elapsed = get_time() - int(cached_at)
-        if 0 <= elapsed < CONFIG.expiration_in_sec:
+        if 0 <= elapsed < (expires or CONFIG.expiration_in_sec):
             if CONFIG.append_header:
                 bottle.response.headers.append(CONFIG.header_name, f"{elapsed / ONE_MINUTE_IN_SEC:,.2f} min")
             return content
@@ -110,7 +110,7 @@ def delete(key: str) -> None:
 #
 
 
-def cache(**cache_kwargs: list[str]) -> Callable:
+def cache(*, expires: int = 0, **cache_kwargs: list[str]) -> Callable:
     """Cache a HTTP response. Decorator to use on routes you want to cache."""
 
     def decorator(func: Callable) -> Callable:
@@ -132,7 +132,7 @@ def cache(**cache_kwargs: list[str]) -> Callable:
                     text += f"-{req_attr.get(value, '')}"
 
             key = compute_key(text)
-            return read(key) or create(key, func(*args, **kwargs))
+            return read(key, expires=expires) or create(key, func(*args, **kwargs))
 
         return wrapper
 

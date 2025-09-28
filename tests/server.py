@@ -21,4 +21,10 @@ def index2(name: str) -> str:
     return bottle.template("<b>Hello {{name}} ({{gender}}, {{pron}})</b>!", name=name, **bottle.request.params)
 
 
+@bottle.route("/hello3/<name>")
+@cache(expires=1)
+def index3(name: str) -> str:
+    return bottle.template("<b>Hello {{name}}</b>!", name=name)
+
+
 app = bottle.default_app()

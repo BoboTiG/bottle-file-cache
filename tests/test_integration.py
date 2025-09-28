@@ -6,6 +6,7 @@ You can always get the latest version at:
 
 from __future__ import annotations
 
+from time import sleep
 from unittest.mock import patch
 
 import bottle
@@ -97,3 +98,21 @@ def test_from_path_and_params(app: TestApp) -> None:
 
     text = f"{path}-{params['gender']}-{params['pron']}-{params.get('not-used', '')}"
     assert cached_files() == [f"{bottle_file_cache.compute_key(text)}.{bottle_file_cache.CONFIG.file_ext}"]
+
+
+def test_expires(app: TestApp) -> None:
+    path = f"/hello3/{WHOAMI}"
+    expected = f"<b>Hello {WHOAMI}</b>!".encode()
+
+    # First call is not yet cached
+    response = app.get(path)
+    assert response.body == expected
+    assert bottle_file_cache.CONFIG.header_name not in response.headers
+    assert len(cached_files()) == 1
+
+    sleep(1.01)
+
+    # Second one is not cached (expired too soon)
+    response = app.get(path)
+    assert response.body == expected
+    assert bottle_file_cache.CONFIG.header_name not in response.headers

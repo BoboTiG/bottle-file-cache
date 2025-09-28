@@ -58,6 +58,21 @@ def test_read_expired() -> None:
     assert not cached_files()
 
 
+def test_read_expires() -> None:
+    assert not cached_files()
+
+    value = "data"
+    bottle_file_cache.create(KEY, value)
+    assert cached_files()
+
+    assert bottle_file_cache.read(KEY) == value
+
+    time.sleep(1.01)
+    assert bottle_file_cache.read(KEY, expires=1) is None
+
+    assert not cached_files()
+
+
 def test_delete() -> None:
     assert not cached_files()
 
