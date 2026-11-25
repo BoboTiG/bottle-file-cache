@@ -6,18 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased] - 202x-xx-xx
-
-### Added
-- 
+## [1.1.1] - 2026-11-25
 
 ### Changed
 - Handle missing cache directory race condition during cache file creation.
 - Prevent premature cache misses when expires is 0 by falling back to `CONFIG.expiration_in_sec`.
 - Prevent partial or corrupted cache reads under concurrent access using atomic file replacement.
-
-### Removed
--
 
 
 ## [1.1.0] - 2025-09-28
@@ -32,6 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First version.
 
 
-[Unreleased]: https://github.com/BoboTiG/bottle-file-cache/compare/1.1.0...HEAD
 [1.0.0]: https://github.com/BoboTiG/bottle-file-cache/tree/1.0.0
 [1.1.0]: https://github.com/BoboTiG/bottle-file-cache/tree/1.1.0
+[1.1.1]: https://github.com/BoboTiG/bottle-file-cache/tree/1.1.1
