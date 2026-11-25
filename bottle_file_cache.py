@@ -7,15 +7,15 @@ You can always get the latest version at:
 from __future__ import annotations
 
 import atexit
-from contextlib import suppress
 from functools import wraps
 from hashlib import md5
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 from time import time
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
 from zlib import compress, decompress
+from zlib import error as zlib_error
 
 import bottle
 
@@ -82,14 +82,29 @@ def create(key: str, content: str) -> str:
     target = get_file(key)
 
     for attempt in range(2):
-        CONFIG.folder.mkdir(exist_ok=True, parents=True)
+        target.parent.mkdir(exist_ok=True, parents=True)
+        tmp_path: Path | None = None
         try:
-            target.write_bytes(payload)
+            with NamedTemporaryFile(
+                mode="wb",
+                dir=target.parent,
+                prefix=f".{key}.",
+                suffix=".tmp",
+                delete=False,
+            ) as tmp_file:
+                tmp_path = Path(tmp_file.name)
+                tmp_file.write(payload)
+            tmp_path.replace(target)
+            break
         except FileNotFoundError:
+            if tmp_path:
+                tmp_path.unlink(missing_ok=True)
             if attempt == 1:
                 raise
-        else:
-            return content
+        except Exception:
+            if tmp_path:
+                tmp_path.unlink(missing_ok=True)
+            raise
 
     return content
 

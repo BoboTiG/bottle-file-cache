@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Handle missing cache directory race condition during cache file creation.
 - Prevent premature cache misses when expires is 0 by falling back to `CONFIG.expiration_in_sec`.
+- Prevent partial or corrupted cache reads under concurrent access using atomic file replacement.
 
 ### Removed
 -

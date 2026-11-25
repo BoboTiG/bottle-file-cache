@@ -54,6 +54,14 @@ def test_create_retries_when_cache_dir_vanishes_before_write() -> None:
     assert bottle_file_cache.get_file("93f2de3a312a2dd4a08cc5c535bfff98").exists()
 
 
+def test_create_atomically_replaces_cache_file() -> None:
+    bottle_file_cache.create("k1", "first")
+    bottle_file_cache.create("k1", "second")
+
+    assert bottle_file_cache.read("k1") == "second"
+    assert [p.name for p in bottle_file_cache.CONFIG.folder.iterdir()] == ["k1.cache"]
+
+
 def test_read_no_cache_entry() -> None:
     assert not cached_files()
 
