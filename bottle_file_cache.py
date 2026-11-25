@@ -78,8 +78,19 @@ def get_time() -> int:
 
 def create(key: str, content: str) -> str:
     """Store a HTTP response into a compressed cache file."""
-    CONFIG.folder.mkdir(exist_ok=True, parents=True)
-    get_file(key).write_bytes(compress(f"{get_time()}|{content}".encode(), level=9))
+    payload = compress(f"{get_time()}|{content}".encode(), level=9)
+    target = get_file(key)
+
+    for attempt in range(2):
+        CONFIG.folder.mkdir(exist_ok=True, parents=True)
+        try:
+            target.write_bytes(payload)
+        except FileNotFoundError:
+            if attempt == 1:
+                raise
+        else:
+            return content
+
     return content
 
 

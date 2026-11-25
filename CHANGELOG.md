@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 
 
 ### Changed
-- 
+- Handle missing cache directory race condition during cache file creation.
 
 ### Removed
 -

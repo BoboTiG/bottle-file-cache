@@ -6,10 +6,15 @@ You can always get the latest version at:
 
 from __future__ import annotations
 
+import shutil
 import time
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 import bottle_file_cache
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 KEY = bottle_file_cache.compute_key("something")
 
@@ -26,6 +31,27 @@ def test_create() -> None:
     value = "data"
     assert bottle_file_cache.create(KEY, value) == value
     assert cached_files() == [f"{KEY}.{bottle_file_cache.CONFIG.file_ext}"]
+
+
+def test_create_retries_when_cache_dir_vanishes_before_write() -> None:
+    original_mkdir = bottle_file_cache.CONFIG.folder.__class__.mkdir
+    removed_once = False
+
+    def mkdir_then_remove(self: Path, *args: Path, **kwargs: bool) -> None:
+        nonlocal removed_once
+
+        if not removed_once:
+            # Simulate an external deletion of the folder right before write_bytes()
+            removed_once = True
+            shutil.rmtree(bottle_file_cache.CONFIG.folder, ignore_errors=True)
+        else:
+            original_mkdir(self, *args, **kwargs)
+
+    with patch.object(bottle_file_cache.CONFIG.folder.__class__, "mkdir", mkdir_then_remove):
+        result = bottle_file_cache.create("93f2de3a312a2dd4a08cc5c535bfff98", "<html>cached</html>")
+
+    assert result == "<html>cached</html>"
+    assert bottle_file_cache.get_file("93f2de3a312a2dd4a08cc5c535bfff98").exists()
 
 
 def test_read_no_cache_entry() -> None:
