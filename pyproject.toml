@@ -28,6 +28,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 keywords = [
@@ -47,16 +48,16 @@ Tracker = "https://github.com/BoboTiG/bottle-file-cache/issues"
 
 [project.optional-dependencies]
 tests = [
-  "bottle==0.13.3",
-  "mypy==1.15.0",
-  "pytest==8.3.5",
-  "pytest-cov==6.1.1",
-  "ruff==0.11.11",
-  "webtest==3.0.4",
+  "bottle==0.13.4",
+  "mypy==2.4.1",
+  "pytest==9.2.0",
+  "pytest-cov==7.1.0",
+  "ruff==0.17.6",
+  "webtest==3.0.7",
 ]
 dev = [
-  "build==1.2.2.post1",
-  "twine==6.1.0",
+  "build==1.6.1",
+  "twine==7.0.0",
 ]
 
 [tool.hatch.version]
@@ -115,7 +116,7 @@ addopts = """
 [tool.ruff]
 line-length = 120
 indent-width = 4
-target-version = "py38"
+target-version = "py310"
 
 [tool.ruff.format]
 quote-style = "double"
@@ -130,6 +131,7 @@ ignore = [
   "D203",     # conflict
   "D213",     # conflict
   "ISC001",   # conflict
+  "CPY001",   # falsy "missing copyright notice at top of file"
 ]
 fixable = ["ALL"]
 
