@@ -99,6 +99,14 @@ def test_read_expires() -> None:
     assert not cached_files()
 
 
+def test_read_expiration_uses_configured_ttl_when_expires_is_zero() -> None:
+    with patch.object(bottle_file_cache, "get_time", lambda: 1000):
+        bottle_file_cache.create("k1", "payload")
+
+    with patch.object(bottle_file_cache, "get_time", lambda: 1010):
+        assert bottle_file_cache.read("k1", expires=0) == "payload"
+
+
 def test_delete() -> None:
     assert not cached_files()
 

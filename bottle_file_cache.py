@@ -97,17 +97,22 @@ def create(key: str, content: str) -> str:
 def read(key: str, *, expires: int = 0) -> str | None:
     """Retreive a response from a potential cache file using the provided `key`."""
     file = get_file(key)
+    ttl = expires if expires > 0 else CONFIG.expiration_in_sec
 
-    with suppress(FileNotFoundError):
-        cached_at, content = decompress(file.read_bytes()).decode().split("|", 1)
-        elapsed = get_time() - int(cached_at)
-        if 0 <= elapsed < (expires or CONFIG.expiration_in_sec):
-            if CONFIG.append_header:
-                bottle.response.headers.append(CONFIG.header_name, f"{elapsed / ONE_MINUTE_IN_SEC:,.2f} min")
-            return content
+    try:
+        raw_bytes = file.read_bytes()
+        cached_at_str, content = decompress(raw_bytes).decode().split("|", 1)
+        cached_at = int(cached_at_str)
+    except (FileNotFoundError, zlib_error, UnicodeDecodeError, ValueError, OSError):
+        return None
 
-        delete(key)
+    elapsed = get_time() - cached_at
+    if 0 <= elapsed < ttl:
+        if CONFIG.append_header:
+            bottle.response.headers.append(CONFIG.header_name, f"{elapsed / ONE_MINUTE_IN_SEC:,.2f} min")
+        return content
 
+    delete(key)
     return None
 
 
